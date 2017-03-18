@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="invalid_files/intl.css" type="text/css"?>
+<parsererror xmlns="http://www.mozilla.org/newlayout/xml/parsererror.xml">XML Parsing Error: no element found
+Location: http://cs-server.usc.edu:45678/hw/hw4/invalid.xml
+Line Number 51, Column 11:<sourcetext>&lt;Workbook&gt;
+----------^</sourcetext></parsererror>

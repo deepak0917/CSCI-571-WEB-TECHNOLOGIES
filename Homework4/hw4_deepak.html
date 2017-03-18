@@ -1,0 +1,209 @@
+<!doctype html>
+<html>
+
+<head>
+
+	<title>XML Parsing</title>
+	<meta charset="utf-8" />
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="Deepak CSCI 571 HW 4" />
+    
+    <script type="text/javascript">
+        
+        function viewXML(what){
+            var URL = what.URL.value;
+            
+            if(URL==""){
+                alert("Error: please enter a file name");
+                return;
+            }
+            
+            function loadXML(url) {
+                if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
+                    xmlhttp=new XMLHttpRequest();   
+                }else {// code for IE6, IE5
+                    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");  
+                }
+                xmlhttp.open("GET",url,false);
+                
+                try{
+                    xmlhttp.send();
+                }catch(err){
+                    return false;
+                }
+                
+                if(xmlhttp.status!=200){
+                    return false;
+                }
+                    
+                 
+                xmlDoc=xmlhttp.responseXML;
+                return xmlDoc;   
+            }
+            
+            xmlDoc = loadXML(URL);
+        
+            
+            if(!xmlDoc){
+                alert("Error: File does not exist");
+                return;
+            }
+            
+            
+            if (window.ActiveXObject) //if IE, simply execute script (due to async prop).
+            {  
+                if (xmlDoc.parseError.errorCode != 0) {
+                    var myErr = xmlDoc.parseError;
+                    //generateError(xmlDoc);
+                    alert("Error: Invalid File");
+                    return;
+                } else {  
+                    generateHTML(xmlDoc);
+                    hWin = window.open("", "Assignment4", "height=700,width=900,scrollbars=yes");
+                    hWin.document.write(html_text);   
+                }
+            } else {  //else if FF, execute script once XML object has loaded
+                if (xmlDoc.documentElement.nodeName == "parsererror"){
+                    alert("Error: Invalid File");
+                    return;
+                }
+                else{
+                    if(xmlDoc.getElementsByTagName("Row").length==0){
+                        alert("Error: Empty Network List");
+                        return;
+                    }
+                    else{
+                        xmlDoc.onload=generateHTML(xmlDoc);
+                        hWin = window.open("", "Assignment4", "height=700,width=900,scrollbars=yes");
+                        hWin.document.write(html_text); 
+                    }
+                }
+            }
+            hWin.document.close();  
+        }
+        
+        
+            
+        
+        
+        function generateHTML(xmlDoc){  
+            ELEMENT_NODE = 1;    // MS parser doesn't define Node.ELEMENT_NODE
+            root=xmlDoc.DocumentElement;
+            html_text="<html><head><title>XML Parse Result</title></head><bo" + "dy>";
+            html_text+="<table border='2'>";
+            html_text+="<tbody>";
+            // output the headers
+                   
+                   html_text+="<thead><tr>";
+                   var header=xmlDoc.getElementsByTagName("Header").item(0);
+                   var data=header.getElementsByTagName("Data");
+           
+                   for(var i=0;i<data.length;i++){
+
+                        html_text+="<th>"+data.item(i).firstChild.data+"</th>"
+
+                   }
+                   
+                   html_text+="</tr></thead>";           
+            
+            // output all companies rows
+            companies=xmlDoc.getElementsByTagName("Row");
+
+            for(i=0;i<companies.length;i++){  
+                companiesList=companies.item(i).childNodes; 
+                html_text+="<tr>";      
+                for(j=0;j<companiesList.length;j++){  
+                    if(companiesList.item(j).nodeType==ELEMENT_NODE){//check for FF NODE_TYPE
+                        if(companiesList.item(j).firstChild){//Check if a tag is empty then output N.A.
+                            if(companiesList.item(j).nodeName=="Logo"){
+                                html_text+="<td><img src='"+companiesList.item(j).firstChild.nodeValue + "'></td>";
+                            }else if(companiesList.item(j).nodeName=="Feeds") {
+
+                                var allFeed = companiesList.item(j).childNodes;
+                                
+                                if(allFeed.length==0){
+                                        html_text+="<td>N.A.</td>";
+                                }
+                                else{
+                                    html_text+="<td><ul>"; 
+                                    
+                                    for(k=0;k<allFeed.length;k++)
+                                    {
+                                        var feedText = allFeed.item(k);
+                                        if(feedText.nodeName=="Feed" && feedText.innerHTML!='')
+                                            html_text+= "<li>" + feedText.innerHTML + "</li>";
+                                    }
+
+                                    html_text+="</ul></td>";
+                                }
+                            }else if(companiesList.item(j).nodeName=="HomePage") {
+                                html_text+="<td><a href=\"" + companiesList.item(j).firstChild.nodeValue + "\">" +                                                         companiesList.item(j).firstChild.nodeValue + "</a></td>";
+                            }
+                            else {
+                                html_text+="<td>"+companiesList.item(j).firstChild.nodeValue+"</td>";
+                            }  
+                        }
+                        else{
+                            html_text+="<td>N.A.</td>";
+                        }
+                    }   
+                }
+                html_text+="</tr>";  
+            }
+            html_text+="</tbody>";  html_text+="</table>";
+            html_text+="</bo" + "dy></html>";  
+        }    
+        
+    </script>
+    
+    <style>
+    
+        #choosefile{
+            width: 350px;
+            height: 300px;
+            margin: 50px auto;
+            
+            font-family:Times;
+            text-align:center;
+            color:#414241;
+        }
+        
+        
+        #FileUpload{
+            width:150px;
+            height:20px;
+            border:1px solid  #BDBDBE;
+            border-top:2.5px solid  #BDBDBE;
+        }
+        
+        .Submit{
+            width:100px;
+            height:22px;
+            border-radius:3.3px;
+            background:#D3D7D6;
+            font-size:0.7em;
+            padding:2px;
+            border:1.8px solid #A3A2A1;
+        }
+        
+    </style>
+	
+</head>
+
+<body>
+    <div id="choosefile">
+    Enter URL for Company List XML File
+    <form name="myform" method="POST" id="location">
+        <br />
+        <input type="text" id="FileUpload" name="URL"/>
+        <br /><br />
+        <input type="button" class="Submit" name="submit" value="Submit Query" onClick="viewXML(this.form)" />
+    </form>
+
+    </div>
+    
+	<noscript> 
+	
+</body>
+
+</html>
